@@ -32,24 +32,33 @@ func monteCarloPi(samples int) {
 	samplesPerThread := samples / numCPUs
 	threadResults := make(chan uint64, numCPUs)
 
-	loopValue := make(chan int, 1)
+	//	loopValue := make(chan int, 1)
+
+	//fmt.Printf("CPU is %d\n", cpu)
 
 	ticker := time.NewTicker(500 * time.Millisecond)
+	/*
+		done := make(chan bool)
 
-	go func() {
-		for {
-			select {
-			//    case <-done:
-			//        return
-			case t := <-ticker.C:
-				fmt.Println("Tick received, loopValue is", t, <-loopValue)
+		go func() {
+			for {
+				fmt.Printf("Start ticker select loop\n")
+
+				select {
+				case <-done:
+					return
+				case t := <-ticker.C:
+					fmt.Println("Tick at", t)
+				}
+				fmt.Printf(".")
+
 			}
-		}
-	}()
+		}() */
 
 	//	done := make(chan bool)
 
 	for i := 0; i < numCPUs; i++ {
+
 		go func(cpu int) {
 
 			var pointsInside uint64
@@ -61,11 +70,16 @@ func monteCarloPi(samples int) {
 
 				if x*x+y*y <= 1.0 {
 					pointsInside++
-					if cpu == 0 {
-						loopValue <- j
-						//			done <- true
-					}
 				}
+
+				select {
+				//case <-done:
+				//			return
+				case t := <-ticker.C:
+					fmt.Println("Tick at", t)
+				default:
+				}
+
 			}
 			threadResults <- pointsInside
 		}(i)
