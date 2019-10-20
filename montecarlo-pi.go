@@ -21,9 +21,7 @@ func main() {
 	monteCarloPi(1000000000)
 
 	elapsed := time.Since(start)
-	//	fmt.Printf("Processing finished in %d seconds\n", elapsed)
 	fmt.Printf("Processing finished in %f seconds\n", float32(elapsed)/float32(time.Millisecond)/1000)
-
 }
 
 func monteCarloPi(samples int) {
@@ -32,30 +30,7 @@ func monteCarloPi(samples int) {
 	samplesPerThread := samples / numCPUs
 	threadResults := make(chan uint64, numCPUs)
 
-	//	loopValue := make(chan int, 1)
-
-	//fmt.Printf("CPU is %d\n", cpu)
-
 	ticker := time.NewTicker(500 * time.Millisecond)
-	/*
-		done := make(chan bool)
-
-		go func() {
-			for {
-				fmt.Printf("Start ticker select loop\n")
-
-				select {
-				case <-done:
-					return
-				case t := <-ticker.C:
-					fmt.Println("Tick at", t)
-				}
-				fmt.Printf(".")
-
-			}
-		}() */
-
-	//	done := make(chan bool)
 
 	for i := 0; i < numCPUs; i++ {
 
@@ -72,12 +47,14 @@ func monteCarloPi(samples int) {
 					pointsInside++
 				}
 
-				select {
-				//case <-done:
-				//			return
-				case t := <-ticker.C:
-					fmt.Println("Tick at", t)
-				default:
+				if j&0x3ffff == 262143 && cpu == 0 {
+					select {
+					// case t := <-ticker.C:
+					// 	fmt.Println("Tick at", t)
+					case <-ticker.C:
+						fmt.Printf("%f\n", float32(j)/float32(samplesPerThread))
+					default:
+					}
 				}
 
 			}
