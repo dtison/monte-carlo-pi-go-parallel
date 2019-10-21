@@ -44,9 +44,9 @@ func monteCarloPi(samples uint64) {
 
 	threadResults := make(chan uint64, numCPUs)
 
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(10 * time.Millisecond)
 
-	bar := pb.StartNew(10)
+	bar := pb.StartNew(100)
 
 	var wg sync.WaitGroup
 	wg.Add(numCPUs)
@@ -93,7 +93,8 @@ func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, 
 	var pointsInside uint64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	uiBar := uint64(0)
+	uiPos := uint64(0)
+	uiAdvance := samples / 100
 	for j := uint64(0); j < samples; j++ {
 
 		x, y := r.Float64(), r.Float64()
@@ -103,13 +104,10 @@ func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, 
 		}
 
 		select {
-		// case t := <-ticker.C:
-		// 	fmt.Println("Tick at", t)
 		case <-ticker.C:
-			//	fmt.Printf("%f\n", float32(j))
-			for i := uint64(0); (uiBar+i)*10 < j; i++ {
+			for i := (uiPos * uiAdvance); i < j; i += uiAdvance {
 				bar.Increment()
-				uiBar++
+				uiPos++
 
 			}
 		default:
