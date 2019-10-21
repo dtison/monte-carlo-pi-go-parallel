@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"math/rand"
@@ -11,23 +12,25 @@ import (
 	"github.com/cheggaaa/pb"
 )
 
-// TODO:  samplesPerThread should be uint64
-
 const MaxUint = ^uint32(0)
 const MinUint = 0
 const MaxInt = int32(MaxUint >> 1)
 const MinInt = -MaxInt - 1
 
+var startTime time.Time
+
 func main() {
 
-	start := time.Now()
+	startTime = time.Now()
 
-	fmt.Println("GOMAXPROCS set from", runtime.GOMAXPROCS(runtime.NumCPU()), "to", runtime.GOMAXPROCS(0))
-	rand.Seed(time.Now().UnixNano())
-	monteCarloPi(1000000000)
+	fmt.Println("Using", runtime.NumCPU(), "cores..\n")
 
-	elapsed := time.Since(start)
-	fmt.Printf("Processing finished in %f seconds\n", float32(elapsed)/float32(time.Millisecond)/1000)
+	samples := flag.Uint64("samples", 1000000000, "Number of samples to test")
+	flag.Parse()
+
+	monteCarloPi(*samples)
+
+	displayMessageWithElapsedTime("Processing finished.")
 }
 
 func monteCarloPi(samples uint64) {
@@ -35,7 +38,7 @@ func monteCarloPi(samples uint64) {
 	numCPUs := runtime.NumCPU()
 	samplesPerThread := uint64(samples / uint64(numCPUs))
 
-	samplesCoreZero := samplesPerThread >> 1
+	samplesCoreZero := uint64(float64(samplesPerThread) * .7)
 	samplesPerThread = uint64(math.Round(float64(samples-samplesCoreZero) / float64((numCPUs - 1))))
 
 	totalSamples := samplesPerThread*(uint64(numCPUs-1)) + samplesCoreZero
@@ -44,7 +47,7 @@ func monteCarloPi(samples uint64) {
 
 	threadResults := make(chan uint64, numCPUs)
 
-	ticker := time.NewTicker(10 * time.Millisecond)
+	ticker := time.NewTicker(100 * time.Millisecond)
 
 	bar := pb.StartNew(100)
 
@@ -57,13 +60,12 @@ func monteCarloPi(samples uint64) {
 		go threadMC(samplesPerThread, threadResults, &wg)
 	}
 	wg.Wait()
-	// TODO:  Try the range for again
 
 	var total uint64
+
 	for i := 0; i < numCPUs; i++ {
 		total += <-threadResults
 	}
-	bar.Finish()
 
 	fmt.Printf("%f\n", float64(total)/float64(totalSamples)*4.0)
 
@@ -89,7 +91,10 @@ func threadMC(samples uint64, threadResults chan uint64, wg *sync.WaitGroup) {
 }
 
 func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, bar *pb.ProgressBar, wg *sync.WaitGroup) {
+	defer wg.Done()
+	defer bar.Finish()
 
+	//	defer displayMessageWithElapsedTime("UI Thread now finished.")
 	var pointsInside uint64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -115,39 +120,13 @@ func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, 
 
 	}
 	threadResults <- pointsInside
-	defer wg.Done()
 }
 
-/*
-func testPoints(r *rand.Rand, pointsInside *uint64) {
-	x, y := r.Float64(), r.Float64()
+func displayMessageWithElapsedTime(message string) {
+	elapsed := time.Since(startTime)
+	fmt.Printf("%s %f seconds\n", message, float32(elapsed)/float32(time.Millisecond)/1000)
+}
 
-	if x*x+y*y <= 1.0 {
-		*pointsInside++
-	}
-} */
-
-//	updateInterval := samplesPerThread >> 7
-
-// if cpu == 0 && (j&0xffff) == MaxInt  {
-// 	fmt.Printf(".")
-
+// for result := range threadResults {
+// 	total += result
 // }
-
-// if cpu == 0 && (j%updateInterval) == 0 {
-// 	fmt.Printf(".")
-// }
-
-/* 				if cpu == 0 {
-	   fmt.Printf("j&0xff is %d\n", j&0xff)
-   }
-   if j&0xff == 255 && cpu == 0 {
-	   select {
-	   // case t := <-ticker.C:
-	   // 	fmt.Println("Tick at", t)
-	   case <-ticker.C:
-		   //	fmt.Printf("%f\n", float32(j)/float32(samplesPerThread))
-		   bar.Increment()
-	   default:
-	   }
-   } */
