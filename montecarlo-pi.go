@@ -1,6 +1,6 @@
 package main
 
-// TODO:  Flag for # cores to use.  Flag to run quiet (faster)
+// TODO:  Flag for # cores to use.  Flag to run quiet (faster)  Display number samples used.  Fix the number of samples so matches flag
 import (
 	"flag"
 	"fmt"
@@ -19,13 +19,13 @@ func main() {
 
 	startTime = time.Now()
 
-	fmt.Println("Using", runtime.NumCPU(), "cores..\n")
+	fmt.Println("Monte Carlo Pi Estimator\nUsing", runtime.NumCPU(), "cores..\n")
 
 	samples := flag.Uint64("samples", 1000000000, "Number of samples to test")
 	flag.Parse()
 
 	pi := monteCarloPi(*samples)
-	displayMessageWithElapsedTime("\n\nProcessing took")
+	displayMessageWithElapsedTime("\n\nProcessing completed in")
 
 	fmt.Printf("\nCalculated value of Pi is %f\n\n", pi)
 
@@ -41,11 +41,11 @@ func monteCarloPi(samples uint64) float64 {
 
 	totalSamples := samplesPerThread*(uint64(numCPUs-1)) + samplesCoreZero
 
-	fmt.Printf("Corezero samples %d, Rest of threads %d total samples %d\n\n", samplesCoreZero, samplesPerThread, totalSamples)
+	fmt.Printf("UI core samples=%d, Remaining threads=%d total samples=%d\n\n", samplesCoreZero, samplesPerThread, totalSamples)
 
 	threadResults := make(chan uint64, numCPUs)
 
-	ticker := time.NewTicker(50 * time.Millisecond)
+	ticker := time.NewTicker(100 * time.Millisecond)
 
 	bar := progressbar.New(100)
 
@@ -54,7 +54,7 @@ func monteCarloPi(samples uint64) float64 {
 
 	go threadMCUI(samplesCoreZero, threadResults, ticker, bar, &wg)
 
-	for i := 0; i < numCPUs; i++ {
+	for i := 0; i < numCPUs-1; i++ {
 		go threadMC(samplesPerThread, threadResults, &wg)
 	}
 	wg.Wait()
