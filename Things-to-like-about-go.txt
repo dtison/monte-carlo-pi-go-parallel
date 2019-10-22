@@ -1,0 +1,31 @@
+Things I like about go.
+
+1.  No exceptions. Do everything using return codes.  No nesting of exceptions and complex re-throws.
+
+2.  Return multiple values from functions.
+
+3.  Concise grammar. [Esp. no semicolons, no parens on if's, range for's].  
+
+4.  No ceremonial "public static class blah blah" type stuff.  No complex inheritance structures, operator overloading  to deal with.
+
+5.  Supports higher order functions, lambdas, etc.
+
+6.  Super easy threads, concurrency.  Able to go full parallel comparable to OpenMP, 
+
+7.  Messaging via channels.
+
+8.  Supports real pointers like C/C++
+
+9.  Compiled.  No JVM.  Not interpreted like Python, PHP, Ruby, Javascript (except for webassembly)
+
+10.  Supports composition by way of Interfaces.
+
+Couple things I don't like:
+
+WHY no ternary operator?
+
+Grownups can do a ? b() ; c() with great effect.
+
+Compiled binaries are large.  Whatever.  It's because all the libraries are linked in.
+
+
