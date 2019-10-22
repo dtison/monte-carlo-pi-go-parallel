@@ -1,6 +1,7 @@
 # monte-carlo-pi-go-parallel
-*Pi Estimator using Monte Carlo Algorithm with Parallel Goroutines*
-Options
+**Pi Estimator using Monte Carlo Algorithm with Parallel Goroutines**
+
+**Options**
 
 -samples=number of samples
 
