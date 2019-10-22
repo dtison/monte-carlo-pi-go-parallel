@@ -24,9 +24,11 @@ func main() {
 	samples := flag.Uint64("samples", 1000000000, "Number of samples to test")
 	flag.Parse()
 
-	fmt.Printf("\nCalculated value of Pi is %f\n\n", monteCarloPi(*samples))
+	pi := monteCarloPi(*samples)
+	displayMessageWithElapsedTime("\n\nProcessing took")
 
-	displayMessageWithElapsedTime("Processing took")
+	fmt.Printf("\nCalculated value of Pi is %f\n\n", pi)
+
 }
 
 func monteCarloPi(samples uint64) float64 {
@@ -39,7 +41,7 @@ func monteCarloPi(samples uint64) float64 {
 
 	totalSamples := samplesPerThread*(uint64(numCPUs-1)) + samplesCoreZero
 
-	fmt.Printf("Corezero samples %d, Rest of threads %d total samples %d\n", samplesCoreZero, samplesPerThread, totalSamples)
+	fmt.Printf("Corezero samples %d, Rest of threads %d total samples %d\n\n", samplesCoreZero, samplesPerThread, totalSamples)
 
 	threadResults := make(chan uint64, numCPUs)
 
