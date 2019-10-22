@@ -99,8 +99,8 @@ func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, 
 	var pointsInside uint64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	uiPos := uint64(0)
-	uiAdvance := samples / 100
+	uiPos, uiAdvance  := uint64(0), samples / 100
+	 
 	for j := uint64(0); j < samples; j++ {
 
 		x, y := r.Float64(), r.Float64()
