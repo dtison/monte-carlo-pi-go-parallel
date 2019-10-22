@@ -1,5 +1,6 @@
 package main
 
+// TODO:  Flag for # cores to use.  Flag to run quiet (faster)
 import (
 	"flag"
 	"fmt"
@@ -12,11 +13,6 @@ import (
 	"github.com/cheggaaa/pb"
 )
 
-const MaxUint = ^uint32(0)
-const MinUint = 0
-const MaxInt = int32(MaxUint >> 1)
-const MinInt = -MaxInt - 1
-
 var startTime time.Time
 
 func main() {
@@ -28,12 +24,12 @@ func main() {
 	samples := flag.Uint64("samples", 1000000000, "Number of samples to test")
 	flag.Parse()
 
-	monteCarloPi(*samples)
+	fmt.Printf("\nCalculated value of Pi is %f\n\n", monteCarloPi(*samples))
 
-	displayMessageWithElapsedTime("Processing finished.")
+	displayMessageWithElapsedTime("Processing took")
 }
 
-func monteCarloPi(samples uint64) {
+func monteCarloPi(samples uint64) float64 {
 
 	numCPUs := runtime.NumCPU()
 	samplesPerThread := uint64(samples / uint64(numCPUs))
@@ -47,7 +43,7 @@ func monteCarloPi(samples uint64) {
 
 	threadResults := make(chan uint64, numCPUs)
 
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(10 * time.Millisecond)
 
 	bar := pb.StartNew(100)
 
@@ -67,7 +63,7 @@ func monteCarloPi(samples uint64) {
 		total += <-threadResults
 	}
 
-	fmt.Printf("%f\n", float64(total)/float64(totalSamples)*4.0)
+	return float64(total) / float64(totalSamples) * 4.0
 
 }
 
@@ -92,9 +88,12 @@ func threadMC(samples uint64, threadResults chan uint64, wg *sync.WaitGroup) {
 
 func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, bar *pb.ProgressBar, wg *sync.WaitGroup) {
 	defer wg.Done()
-	defer bar.Finish()
+	defer func() {
+		fmt.Println("Calling bar finish()")
+		bar.Finish()
+	}()
 
-	//	defer displayMessageWithElapsedTime("UI Thread now finished.")
+	defer displayMessageWithElapsedTime("UI Thread now finished.")
 	var pointsInside uint64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 

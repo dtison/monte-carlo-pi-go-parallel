@@ -9,3 +9,8 @@ for i := 0; i < n; i++ {
 	}(i)
 }
 wg.Wait()
+
+// const MaxUint = ^uint32(0)
+// const MinUint = 0
+// const MaxInt = int32(MaxUint >> 1)
+// const MinInt = -MaxInt - 1
