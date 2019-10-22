@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cheggaaa/pb"
+	"github.com/schollz/progressbar"
 )
 
 var startTime time.Time
@@ -43,9 +43,9 @@ func monteCarloPi(samples uint64) float64 {
 
 	threadResults := make(chan uint64, numCPUs)
 
-	ticker := time.NewTicker(10 * time.Millisecond)
+	ticker := time.NewTicker(50 * time.Millisecond)
 
-	bar := pb.StartNew(100)
+	bar := progressbar.New(100)
 
 	var wg sync.WaitGroup
 	wg.Add(numCPUs)
@@ -86,14 +86,14 @@ func threadMC(samples uint64, threadResults chan uint64, wg *sync.WaitGroup) {
 	threadResults <- pointsInside
 }
 
-func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, bar *pb.ProgressBar, wg *sync.WaitGroup) {
+func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, bar *progressbar.ProgressBar, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer func() {
-		fmt.Println("Calling bar finish()")
+		//		fmt.Println("Calling bar finish()")
 		bar.Finish()
 	}()
 
-	defer displayMessageWithElapsedTime("UI Thread now finished.")
+	//	defer displayMessageWithElapsedTime("UI Thread now finished.")
 	var pointsInside uint64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -110,9 +110,8 @@ func threadMCUI(samples uint64, threadResults chan uint64, ticker *time.Ticker, 
 		select {
 		case <-ticker.C:
 			for i := (uiPos * uiAdvance); i < j; i += uiAdvance {
-				bar.Increment()
+				bar.Add(1)
 				uiPos++
-
 			}
 		default:
 		}
