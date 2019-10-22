@@ -3,7 +3,13 @@
 
 **Options**
 
--samples=number of samples
+  -samples=number of samples
+
+**Packages**
+
+  go get github.com/schollz/progressbar
+
+**Overview**
 
 For speed and accuracy counters and loops all use uint64.
 
